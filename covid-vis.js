@@ -1,7 +1,6 @@
-// COVID-19 US Cases Visualization
 document.addEventListener('DOMContentLoaded', function() {
     // Set up dimensions and margins - increased height to make room for better legend area
-    const margin = { top: 120, right: 50, bottom: 150, left: 100 };
+    const margin = { top: 120, right: 50, bottom: 200, left: 100 };
     const width = 1100 - margin.left - margin.right;
     const height = 800 - margin.top - margin.bottom;
     const yearHeight = height / 3;
@@ -35,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create proper date object based on the format
             let date;
             if (d.date.includes('-')) {
-                // YYYY-MM-DD format
+        
                 date = new Date(
                     parseInt(dateParts[0]),  // Year
                     parseInt(dateParts[1]) - 1,  // Month (0-indexed)
@@ -126,9 +125,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // First find the overall maximum to use for both scales
         const overallMaximum = Math.max(maxCaseAverage, maxDeathAverage * 20); // Scale up deaths to match cases
         
-        // Ensure the domain goes up to at least the maximum value in the data
-        // but also make sure it includes the legend values (100,000)
-        const scaleDomainMax = Math.max(overallMaximum, 100000);
+        const scaleDomainMax = overallMaximum;
         
         // Use the same scale for both, with range increased by 1.5x
         const radiusScaleCase = d3.scaleSqrt()
@@ -376,82 +373,109 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("font-size", "22px")
             .attr("font-weight", "bold")
             .attr("fill", "white")
-            .text("COVID-19 US Cases (2020-2022): 7-Averages");
+            .text("COVID-19 US Cases (2020-2022)");
             
-        // Create a dedicated legend area at the bottom of the chart
         const legendArea = svg.append("g")
             .attr("class", "legend-area")
             .attr("transform", `translate(0, ${height + 60})`);
+    
+        
+        // Calculate widths based on 1:3 ratio
+        const leftSectionWidth = width / 4;  // 1/4 of the total width
+        const rightSectionWidth = width * 3/4;  // 3/4 of the total width
             
-        // Legend for data types (cases and deaths)
-        const typeLegend = legendArea.append("g")
-            .attr("transform", `translate(${width / 2 - 150}, 25)`);
+        // Split the legend area into left and right sections with 1:3 ratio
+        const leftLegend = legendArea.append("g")
+            .attr("class", "left-legend")
+            .attr("transform", `translate(50, 0)`);
             
-        // Legend for cases
-        typeLegend.append("circle")
+        const rightLegend = legendArea.append("g")
+            .attr("class", "right-legend")
+            .attr("transform", `translate(${leftSectionWidth + 50}, 0)`);
+            
+        
+        
+        // ======= LEFT SIDE LEGEND (COLOR LEGEND) =======
+        // Color legend title
+        leftLegend.append("text")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("text-anchor", "start")
+            .attr("fill", "white")
+            .attr("font-size", "12px")
+            .attr("font-weight", "bold");
+        
+
+        leftLegend.append("circle")
             .attr("r", 8)
-            .attr("cx", 0)
-            .attr("cy", 0)
+            .attr("cx", 10)
+            .attr("cy", 30)
             .attr("fill", "rgba(186, 85, 211, 0.95)");
             
-        typeLegend.append("text")
-            .attr("x", 15)
-            .attr("y", 4)
-            .text("COVID-19 New Cases")
+        leftLegend.append("text")
+            .attr("x", 25)
+            .attr("y", 34)
+            .text("New Confirmed Cases")
             .attr("fill", "white")
             .attr("font-size", "12px");
-            
-        // Legend for deaths
-        typeLegend.append("circle")
+        
+    
+        leftLegend.append("circle")
             .attr("r", 8)
-            .attr("cx", 150)
-            .attr("cy", 0)
+            .attr("cx", 10)
+            .attr("cy", 60)
             .attr("fill", "rgba(60, 60, 60, 0.8)");
             
-        typeLegend.append("text")
-            .attr("x", 165)
-            .attr("y", 4)
-            .text("COVID-19 New Deaths")
+        leftLegend.append("text")
+            .attr("x", 25)
+            .attr("y", 64)
+            .text("New Deceased Cases")
             .attr("fill", "white")
             .attr("font-size", "12px");
-
-        // Add circle size legend
-        const sizeLegend = legendArea.append("g")
-        .attr("transform", `translate(100, 60)`);
-
-        // Determine legend sizes using percentiles for more granular representation
+        
+        // ======= RIGHT SIDE LEGEND (SIZE LEGEND) =======
+        rightLegend.append("text")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("text-anchor", "start")
+            .attr("fill", "white")
+            .attr("font-size", "12px")
+            .text("7-Day Average Values");
+        
+        // Create size legend with fixed values
         const sizeLegendData = [
-        { label: "Lowest Wave", value: d3.quantile(weeklyCase.map(d => d.new_confirmed_avg), 0.1) },        
-        { label: "Low Wave", value: d3.quantile(weeklyCase.map(d => d.new_confirmed_avg), 0.25) },
-        { label: "Medium Wave", value: d3.quantile(weeklyCase.map(d => d.new_confirmed_avg), 0.5) },
-        { label: "High Wave", value: d3.quantile(weeklyCase.map(d => d.new_confirmed_avg), 0.75) },
-        { label: "Highest Wave", value: d3.quantile(weeklyCase.map(d => d.new_confirmed_avg), 0.9) }
+            { label: "10,000", value: 10000 },
+            { label: "100,000", value: 100000 },
+            { label: "200,000", value: 200000 },
+            { label: "500,000", value: 500000 },
+            { label: "800,000", value: 1000000 }
         ];
-
-        // Add circles with different sizes - matching the plot's actual scale
+        
+        // Calculate spacing for size legend circles
+        const availableWidth = rightSectionWidth/1.1 - 100;
+        const sizeLegendSpacing = availableWidth / (sizeLegendData.length - 1);
+        
+        // Draw size legend circles
         sizeLegendData.forEach((d, i) => {
-        // Calculate position to space them out evenly
-        const xPos = i * 150; // Reduced spacing to fit more items
-
-        // Add circle with grey stroke and no fill
-        sizeLegend.append("circle")
-        .attr("cx", xPos)
-        .attr("cy", 0)
-        .attr("r", radiusScaleCase(d.value) / 1.2) // Less reduction to show true scale
-        .attr("fill", "none") // No fill
-        .attr("stroke", "rgba(128, 128, 128, 0.8)") // Grey stroke
-        .attr("stroke-width", 1);
-    
-        // Add label
-        sizeLegend.append("text")
-        .attr("x", xPos)
-        .attr("y", 25)
-        .attr("text-anchor", "middle")
-        .attr("fill", "white")
-        .attr("font-size", "12px")
-        .text(d.label);
-        });    
-        
-        
+            const xPos = i * sizeLegendSpacing;
+            
+            // Add circle
+            rightLegend.append("circle")
+                .attr("cx", xPos)
+                .attr("cy", 45) // Center vertically between the two rows of the color legend
+                .attr("r", radiusScaleCase(d.value))
+                .attr("fill", "none")
+                .attr("stroke", "rgba(255, 255, 255, 0.8)")
+                .attr("stroke-width", 1);
+                
+            // Add label
+            rightLegend.append("text")
+                .attr("x", xPos)
+                .attr("y", 120) // Position below the largest circle
+                .attr("text-anchor", "middle")
+                .attr("fill", "white")
+                .attr("font-size", "12px")
+                .text(d.label);
+        });
     }
 });
