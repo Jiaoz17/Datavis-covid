@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Set up dimensions and margins - increased height to make room for better legend area
     const margin = { top: 120, right: 50, bottom: 200, left: 100 };
     const width = 1100 - margin.left - margin.right;
     const height = 800 - margin.top - margin.bottom;
@@ -26,7 +25,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to process the CSV data into the format we need
     function processCSVData(csvData) {
         return csvData.map(d => {
-            // Parse the date (assuming date format is YYYY-MM-DD or MM/DD/YYYY)
             const dateParts = d.date.includes('-') 
                 ? d.date.split('-') 
                 : d.date.split('/');
@@ -34,10 +32,9 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create proper date object based on the format
             let date;
             if (d.date.includes('-')) {
-        
                 date = new Date(
-                    parseInt(dateParts[0]),  // Year
-                    parseInt(dateParts[1]) - 1,  // Month (0-indexed)
+                    parseInt(dateParts[0]),  
+                    parseInt(dateParts[1]) - 1,  
                     parseInt(dateParts[2])   // Day
                 );
             } else {
@@ -51,8 +48,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return {
                 date: date,
-                // Parse the cases value as a number
-                new_confirmed: parseInt(d.new_confirmed || d.cases || 0),
+                // Parse the case and death values as numbers
+                new_confirmed: parseInt(d.new_confirmed || 0),
+                new_deceased: parseInt(d.new_deceased || 0), // Use actual death data from CSV
                 year: date.getFullYear(),
                 month: date.getMonth(),
                 day: date.getDate(),
@@ -66,21 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Generate placeholder death data (about 1-2% of case data)
-    function generatePlaceholderDeathData(caseData) {
-        return caseData.map(d => ({
-            ...d,
-            new_confirmed: Math.round(d.new_confirmed * 0.015) // Approximately 1.5% death rate
-        }));
-    }
-
     // Function to create the visualization
-    function createVisualization(caseData) {
-        // Generate placeholder death data
-        const deathData = generatePlaceholderDeathData(caseData);
-        
-        // Group data by week
-        const weeklyCase = d3.groups(caseData, d => d.weekId)
+    function createVisualization(data) {
+        // Group data by week for cases
+        const weeklyCase = d3.groups(data, d => d.weekId)
             .map(([weekId, values]) => ({
                 weekId: weekId,
                 new_confirmed_avg: d3.mean(values, d => d.new_confirmed),
@@ -91,10 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 middleDay: values[0].middleDay
             }));
             
-        const weeklyDeath = d3.groups(deathData, d => d.weekId)
+        // Group data by week for deaths - using actual death data
+        const weeklyDeath = d3.groups(data, d => d.weekId)
             .map(([weekId, values]) => ({
                 weekId: weekId,
-                new_confirmed_avg: d3.mean(values, d => d.new_confirmed),
+                new_deceased_avg: d3.mean(values, d => d.new_deceased), // Use new_deceased field
                 date: values[0].date,
                 year: values[0].year,
                 month: values[0].month,
@@ -117,20 +105,22 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Find max average for scaling
         const maxCaseAverage = d3.max(weeklyCase, d => d.new_confirmed_avg);
-        const maxDeathAverage = d3.max(weeklyDeath, d => d.new_confirmed_avg);
+        const maxDeathAverage = d3.max(weeklyDeath, d => d.new_deceased_avg); // Use death average
         
         // For proper scaling, check what the actual maximum is in the data
         console.log("Max case value in data:", maxCaseAverage);
+        console.log("Max death value in data:", maxDeathAverage);
 
-        // First find the overall maximum to use for both scales
-        const overallMaximum = Math.max(maxCaseAverage, maxDeathAverage * 20); // Scale up deaths to match cases
+    
+        const deathScaleFactor = 1; // Adjust this factor as needed for  visibility
+        const overallMaximum = Math.max(maxCaseAverage, maxDeathAverage * deathScaleFactor);
         
         const scaleDomainMax = overallMaximum;
         
-        // Use the same scale for both, with range increased by 1.5x
+        // Use the same scale for both
         const radiusScaleCase = d3.scaleSqrt()
             .domain([0, scaleDomainMax])
-            .range([5, 60]); // Increased from 30 to 45 (1.5x larger)
+            .range([5, 60]);
             
         const radiusScaleDeath = d3.scaleSqrt()
             .domain([0, scaleDomainMax])
@@ -143,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         const colorScaleDeath = d3.scaleLinear()
             .domain([0, maxDeathAverage])
-            .range(["rgba(0, 0, 0, 0.05)", "rgba(0, 0, 0, 0.95)"]); // Much darker
+            .range(["rgba(0, 0, 0, 0.20)", "rgba(0, 0, 0, 0.95)"]); // Much darker
         
         // Add year labels - moved further left to prevent being covered by circles
         svg.selectAll(".year-label")
@@ -200,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("y1", 0)
             .attr("x2", d => Math.floor(d / weeksPerMonth) * monthWidth + (d % weeksPerMonth + 1) * (monthWidth / (weeksPerMonth + 1)))
             .attr("y2", height)
-            .attr("stroke", "rgba(255, 255, 255, 0.1)") // Lighter for week lines
+            .attr("stroke", "rgba(255, 255, 255, 0.2)") // Lighter for week lines
             .attr("stroke-width", 0.5)
             .attr("stroke-dasharray", "2,2"); // Dashed line for weeks
         
@@ -319,14 +309,16 @@ document.addEventListener('DOMContentLoaded', function() {
             // Sort data points by date for proper path drawing
             allWeeksData.sort((a, b) => a.date - b.date);
             
-            if (allWeeksData.length < 2) return; // Skip if not enough data points
+            if (allWeeksData.length < 2) return;
             
             // Calculate points for the continuous shape
             const pathPoints = [];
             const bottomPathPoints = [];
             
             allWeeksData.forEach(d => {
-                const radius = radiusScaleDeath(d.new_confirmed_avg);
+                // NOOOOOO Scale up the death values to make them visible alongside case values
+                const scaledValue = d.new_deceased_avg * deathScaleFactor;
+                const radius = radiusScaleDeath(scaledValue);
                 const y = yearHeight / 2;
                 
                 // Add top and bottom curve points
@@ -343,15 +335,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 .y(d => d[1])
                 .curve(d3.curveBasis); // This creates a smooth tangent curve
             
-            // Add the path behind the circles (band) - continuous for the whole year and darker
+            // Add the path behind the circles (band)
             d3.select(this)
                 .append("path")
-                .attr("d", pathGenerator(fullPath) + "Z") // Close path
-                .attr("fill", "rgba(80, 80, 80, 0.6)") // Darker grey
-                .attr("stroke", "rgba(60, 60, 60, 0.8)") // Darker stroke
+                .attr("d", pathGenerator(fullPath) + "Z")
+                .attr("fill", "rgba(80, 80, 80, 0.6)") 
+                .attr("stroke", "rgba(60, 60, 60, 0.8)") 
                 .attr("stroke-width", 0.5);
                 
-            // Add circles for each week - NO STROKE
             d3.select(this)
                 .selectAll("circle.death")
                 .data(allWeeksData)
@@ -360,8 +351,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 .attr("class", "death")
                 .attr("cx", d => d.xPos)
                 .attr("cy", yearHeight / 2)
-                .attr("r", d => radiusScaleDeath(d.new_confirmed_avg))
-                .attr("fill", "rgba(60, 60, 60, 0.8)") // Darker fill for deceased circles
+                .attr("r", d => radiusScaleDeath(d.new_deceased_avg))
+                .attr("fill", d => colorScaleDeath(d.new_deceased_avg))
                 .attr("stroke", "none");
         });
         
@@ -381,10 +372,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
         
         // Calculate widths based on 1:3 ratio
-        const leftSectionWidth = width / 4;  // 1/4 of the total width
-        const rightSectionWidth = width * 3/4;  // 3/4 of the total width
+        const leftSectionWidth = width / 4; 
+        const rightSectionWidth = width * 3/4; 
             
-        // Split the legend area into left and right sections with 1:3 ratio
         const leftLegend = legendArea.append("g")
             .attr("class", "left-legend")
             .attr("transform", `translate(50, 0)`);
@@ -393,10 +383,8 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("class", "right-legend")
             .attr("transform", `translate(${leftSectionWidth + 50}, 0)`);
             
-        
-        
         // ======= LEFT SIDE LEGEND (COLOR LEGEND) =======
-        // Color legend title
+        
         leftLegend.append("text")
             .attr("x", 0)
             .attr("y", 0)
@@ -433,6 +421,13 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("fill", "white")
             .attr("font-size", "12px");
         
+        leftLegend.append("text")
+            .attr("x", 25)
+            .attr("y", 84)
+            .attr("fill", "rgba(200, 200, 200, 0.8)")
+            .attr("font-size", "10px")
+            .attr("font-style", "italic");
+        
         // ======= RIGHT SIDE LEGEND (SIZE LEGEND) =======
         rightLegend.append("text")
             .attr("x", 0)
@@ -442,36 +437,31 @@ document.addEventListener('DOMContentLoaded', function() {
             .attr("font-size", "12px")
             .text("7-Day Average Values");
         
-        // Create size legend with fixed values
         const sizeLegendData = [
             { label: "10,000", value: 10000 },
             { label: "100,000", value: 100000 },
             { label: "200,000", value: 200000 },
             { label: "500,000", value: 500000 },
-            { label: "800,000", value: 1000000 }
+            { label: "800,000", value: 800000 }
         ];
-        
-        // Calculate spacing for size legend circles
+    
         const availableWidth = rightSectionWidth/1.1 - 100;
         const sizeLegendSpacing = availableWidth / (sizeLegendData.length - 1);
         
-        // Draw size legend circles
         sizeLegendData.forEach((d, i) => {
             const xPos = i * sizeLegendSpacing;
             
-            // Add circle
             rightLegend.append("circle")
                 .attr("cx", xPos)
-                .attr("cy", 45) // Center vertically between the two rows of the color legend
+                .attr("cy", 45) 
                 .attr("r", radiusScaleCase(d.value))
                 .attr("fill", "none")
                 .attr("stroke", "rgba(255, 255, 255, 0.8)")
                 .attr("stroke-width", 1);
                 
-            // Add label
             rightLegend.append("text")
                 .attr("x", xPos)
-                .attr("y", 120) // Position below the largest circle
+                .attr("y", 120) 
                 .attr("text-anchor", "middle")
                 .attr("fill", "white")
                 .attr("font-size", "12px")
