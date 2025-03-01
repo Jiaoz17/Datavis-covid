@@ -142,11 +142,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Color scale - made deceased darker
         const colorScaleCase = d3.scaleLinear()
             .domain([0, maxCaseAverage])
-            .range(["rgba(186, 85, 211, 0.7)", "rgba(186, 85, 211, 0.95)"]);
+            .range(["rgba(186, 85, 211, 0.05)", "rgba(186, 85, 211, 0.95)"]);
             
         const colorScaleDeath = d3.scaleLinear()
             .domain([0, maxDeathAverage])
-            .range(["rgba(60, 60, 60, 0.7)", "rgba(10, 10, 10, 0.95)"]); // Much darker
+            .range(["rgba(60, 60, 60, 0.05)", "rgba(10, 10, 10, 0.95)"]); // Much darker
         
         // Add year labels - moved further left to prevent being covered by circles
         svg.selectAll(".year-label")
@@ -381,7 +381,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create a dedicated legend area at the bottom of the chart
         const legendArea = svg.append("g")
             .attr("class", "legend-area")
-            .attr("transform", `translate(0, ${height + 30})`);
+            .attr("transform", `translate(0, ${height + 60})`);
             
         // Legend for data types (cases and deaths)
         const typeLegend = legendArea.append("g")
@@ -431,7 +431,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add circles with different sizes - matching the plot's actual scale
         sizeLegendData.forEach((d, i) => {
         // Calculate position to space them out evenly
-        const xPos = i * 220; // Reduced spacing to fit more items
+        const xPos = i * 150; // Reduced spacing to fit more items
 
         // Add circle with grey stroke and no fill
         sizeLegend.append("circle")
