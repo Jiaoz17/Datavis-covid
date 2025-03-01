@@ -1,0 +1,176 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+	<title>Vis & Society Assignment 3</title>
+	<link rel="stylesheet" href="https://vis-society.github.io/assignments/report.css" />
+	<script src="https://d3js.org/d3.v7.min.js"></script>
+	<style>
+		#covid-visualization {
+			width: 100%;
+			background-color: white;
+			margin: 20px 0;
+		}
+		.vis-container {
+			width: 100%;
+			overflow-x: auto;
+		}
+			/* Custom styles for the visualization */
+			.year-label {
+			font-weight: bold;
+			font-size: 16px;
+			fill: white;
+		}
+		.month-label {
+			font-size: 12px;
+			fill: white;
+		}
+		.title-text {
+			fill: white;
+		}
+		.legend-text {
+			fill: white;
+		}
+		.grid-line {
+			stroke: rgba(255, 255, 255, 0.2);
+		}
+	</style>
+</head>
+
+<body>
+	<header>
+		<h1>
+			<small>Assignment 3</small>
+			Visualization Critique & Redesign
+		</h1>
+
+		<p>
+			<strong>Jiao Zhao</strong> — <em>jiaoz17@mit.edu</em>
+		</p>
+	</header>
+
+	<main>
+		<section>
+			<h2>Reading & Critique</h2>
+
+			<figure>
+				<img src="https://vis-society.github.io/assets/imgs/covid-spiral.png" alt="" />
+			</figure>
+
+			<p>
+				Insights about the data/visualization:The visualization depicts new COVID-19 cases in the United States from 2020 through early 2022. 
+				
+			</p>
+
+			<ul>
+				<li>INSIGHT 1 There is a general growing trend from 2020 (when there were no COVID cases) to early 2022 (with more than 300K cases)
+				</li>
+				<li>INSIGHT 2 The breakdown of the changes over time is as follows: cases increased from 2020 to 2021. A local peak occurred between January and February 2021. After February, cases declined until reaching their lowest point in July. Following July, cases began to rise again, and another peak was reached between September and October 2021. Cases decreased shortly before 2022. By the end of the timeframe, cases had reached their highest point overall.
+				</li>
+				<li>INSIGHT 3 From June to July 2020 and 2021, there were relatively fewer cases compared to other months in the year.</li>
+			</ul>
+
+			<p>
+				Design Critique:
+			</p>
+
+			<ul>
+				<li>CRITIQUE 1 The visualization employed visual encodings and featured a creative representation of the timeline that naturally related to the tree wheel, the progression of time. A band with width represents the number of cases that circulate around the time wheel and provides a general overview of how COVID-19 has spread among people. The aesthetic evokes something related to diseases (like a "worm.")However, the design choice also leads to ineffective information delivery. </li>
+				<li>CRITIQUE 2 Important features like peaks and trends are discernible, but important information regarding the contagiousness and severity of COVID-19 has not been conveyed. The main point in articles is that omicron is much more contagious yet less dangerous. I would suggest adding other dimensions to indicate the severity of cases.</li>
+				<li>CRITIQUE 3 The visuals worked well in pre-attentive processing, making detecting value from the rest of the data easy. Due to the substantial increase in COVID-19 cases caused by Omicron, one significant peak starting in 2022 is easy to identify, along with two other local peaks around early 2021 and November 2021. 
+					The visualization needs to improve in magnitude estimation, as the exact timeline will span circles of different diameters. It's difficult to detect concrete values, and it can also cause confusion when we compare cases from different years. 
+					</li>
+				<li>CRITIQUE 4 Some details that need improvement: The statistical method for calculating the new cause is based on an average of seven days (I assume). The "7-day average" notation appears on only one data point and could better clarify how the data is aggregated. Additional month markers would help readers extract concrete information more easily. Additional auxiliary lines can be added to better indicate the number of cases.
+				</li>
+			</ul>
+		</section>
+
+		<section>
+			<h2>Visualization Sketches</h2>
+			<p>To keep the visualizations comparable, my focus remains consistent with the opinion article: A)highlight trends in new confirmed cases during the given time period, particularly when the spread scope accelerates quickly; and B) show the relationship between new cases and new deaths to demonstrate both the virus's spread and its danger level. </p>
+
+      <figure>
+				<img src="1.jpg" alt="" />
+				<figcaption>
+          BRIEF CAPTION HERE.
+				</figcaption>
+			</figure>
+
+			<p>
+				Design Rationale for Sketch 1:
+			</p>
+
+			<ul>
+				<li>RATIONALE 1 The first rationale is to fix the original issue found in The New Yorker illustration by representing years with different scales. Each circle represents a different year, and from a standard same-sized circle, it draws lines extending outward/inward the circle. The count of new cases controls how much these lines extend outward from the circle - fewer cases mean lines extend slightly, more cases mean lines extend further. The inward lines would represent new deceased cases</li>
+				<li>RATIONALE 2 The inward and outward representation gives a symbolic feeling about the virus spread. The outward extension represents how the virus is spreading into the population - more new cases mean the virus is spreading more extensively. The inward elements use a darker fill to represent the gravity of the situation and can be interpreted as how many people are affected or the severity of this type of virus.
+				</li>
+				<li>RATIONALE 3 Comparing three circles makes it easy to see how COVID has changed across different years. The positioning of these circles make comparison easy.
+				</li>
+			</ul>
+
+			<figure>
+				<img src="2.jpg" alt="" />
+				<figcaption>
+          BRIEF CAPTION HERE.
+				</figcaption>
+			</figure>
+
+			<p>
+				Design Rationale for Sketch 2:
+			</p>
+
+			<ul>
+				<li>RATIONALE 1 This plot functions as a multi-sample visualization while also conveying the total trend. The size of the circle and thus the width of the band represent new confirmed cases. This could be statistically organized by accumulated months, accumulated weeks, or average weeks (the specific statistical method would need further confirmation).</li>
+				<li>RATIONALE 2 The inner darker line's width represents new deceased cases. These deceased data points are logically positioned within the new cases area, which makes natural sense. The darker line used for deceased data adds emotional gravity to the visualization.</li>
+				<li>RATIONALE 3 The biggest strength of this plot is that it's easier to extract actual numerical data compared to the first circular approach. While the first visualization may provide a stronger visual understanding, this band approach maintains easily understandable, comparable. </li>
+			</ul>
+
+			<figure>
+				<img src="3.jpg" alt="" />
+				<figcaption>
+          BRIEF CAPTION HERE.
+				</figcaption>
+			</figure>
+
+			<p>
+				Design Rationale for Sketch 3:
+			</p>
+
+			<ul>
+				<li>RATIONALE 1 After visualizing new confirmed cases and new deaths in the previous two approaches, this visualization adds more information by including cumulative confirmed and cumulative deceased data in the upper/lower  part of the plot. This arrangement is advantageous in showin the whole impact of covid.</li>
+				<li>RATIONALE 2 The changes along the timeline are very easy to recognize, and the straight line conforms to natural understanding of how time progresses. </li>
+				<li>RATIONALE 3 One downside of this plot is that cumulative confirmed cases have a different numerical range compared to new confirmed cases, new deaths, and cumulative deaths. If keeping all data on the same scale, the cumulative confirmed cases would take up too much space, making the changes in the other three data types less visible and harder to interpret.</li>
+			</ul>
+		</section>
+
+		<section>
+			<h2>Final Visualization Design</h2>
+      
+			<figure>
+				<div class="vis-container">
+					<div id="covid-visualization"></div>
+				</div>
+				<figcaption>
+					COVID-19 US Cases (2020-2022): Weekly averages of new confirmed cases visualized as circles, with size and color saturation indicating case count. The bands connect the weekly data points within each month.
+				</figcaption>
+			</figure>
+
+			<!-- Include the external D3.js script -->
+			<script src="process4.js"></script>
+		</section>
+
+		<section>
+			<h2>Design Process & Design Decisions</h2>
+
+			<p>
+        DESCRIBE YOUR DESIGN PROCESS AND DECISION DECISIONS HERE.
+      </p>
+
+      <h3>Reflection</h3>
+
+      <p>
+        I've been reflecting on the challenge of balancing specificity and precision with visual appeal and emotional impact in my work. Finding ways to achieve both simultaneously has been difficult, and sometimes sacrifices must be made. The critique process did help me develop my ideas, and I now feel I've achieved a good balance between the visual encoding and the data I want to express.
+      </p>
+		</section>
+	</main>
+</body>
+</html>

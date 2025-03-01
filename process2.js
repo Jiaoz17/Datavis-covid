@@ -353,40 +353,7 @@ function createCovidVisualization(data) {
     .attr("font-size", "14px")
     .attr("fill", "#93c5fd")
     .text("Deceased Cases");
-    
-  // Add a legend for circle sizes that exactly matches the vertical scale
-  const legendSizes = [1000000, 5000000, 10000000];
-  const legendX = width - 200;
-  const legendY = 50;
   
-  svg.append("text")
-    .attr("x", legendX)
-    .attr("y", legendY - 20)
-    .attr("text-anchor", "start")
-    .attr("font-family", "Arial")
-    .attr("font-size", "14px")
-    .attr("fill", "white")
-    .text("Monthly New Cases");
-  
-  legendSizes.forEach((value, i) => {
-    const radius = getMatchingRadius(value);
-    svg.append("circle")
-      .attr("cx", legendX + 50)
-      .attr("cy", legendY + i * 100 + 50)
-      .attr("r", radius)
-      .attr("fill", "none")
-      .attr("stroke", "white")
-      .attr("stroke-width", 1.5);
-      
-    svg.append("text")
-      .attr("x", legendX + 100)
-      .attr("y", legendY + i * 100 + 50)
-      .attr("dominant-baseline", "middle")
-      .attr("font-family", "Arial")
-      .attr("font-size", "12px")
-      .attr("fill", "white")
-      .text(d3.format(",.0f")(value));
-  });
   
   // Add window resize listener for vertical adjustments only
   window.addEventListener('resize', function() {
