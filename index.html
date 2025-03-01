@@ -8,7 +8,7 @@
 		#covid-visualization {
 			width: 100%;
 			background-color: white;
-			margin: 20px 0;
+			margin: 0px 0;
 		}
 		.vis-container {
 			width: 100%;
@@ -33,6 +33,12 @@
 		.grid-line {
 			stroke: rgba(255, 255, 255, 0.2);
 		}
+		img {
+  		max-width: 100%;
+  		height: auto;
+  		display: block;
+  		margin: 0 auto;
+}
 	</style>
 </head>
 
@@ -144,31 +150,41 @@
 
 		<section>
 			<h2>Final Visualization Design</h2>
-      
+			
 			<figure>
-				<div class="vis-container">
-					<div id="covid-visualization"></div>
+				<!-- Added extra padding to prevent left side from being cut off -->
+				<div style="padding-left: 20px; overflow-x: auto;">
+					<!-- This div will hold your visualization -->
+					<div id="covid-visualization" class="vis-container" style="min-width: 1200px;"></div>
 				</div>
 				<figcaption>
-					COVID-19 US Cases (2020-2022): Weekly averages of new confirmed cases visualized as circles, with size and color saturation indicating case count. The bands connect the weekly data points within each month.
+					COVID-19 US Cases (2020-2022): Weekly data visualization showing the progression of the pandemic across years and months.
 				</figcaption>
 			</figure>
-
-			<!-- Include the external D3.js script -->
-			<script src="process4.js"></script>
+		
+			<p>
+				This visualization shows the pattern of COVID-19 cases in the United States from 2020 through 2022. 
+				Each circle represents weekly data, with larger circles indicating higher case counts. 
+				The visualization arranges data chronologically, allowing for easy comparison between months and years.
+			</p>
+			
+			<!-- Link to your JavaScript file -->
+			<script src="covid-vis.js"></script>
 		</section>
 
 		<section>
 			<h2>Design Process & Design Decisions</h2>
 
 			<p>
-        DESCRIBE YOUR DESIGN PROCESS AND DECISION DECISIONS HERE.
+				The goal is to understand trends and relationship between newly confirmed cases and deaths. I’ve thought about the intended audience (e.g. information-avoidant versus data-curious people), the kind of information they need (general trends versus detailed data for personal analysis), and whether they need a chance to look closer to extract specific data and have their own findings from a comprehensive visualization rather than just a symbolic one like The New Yorker's original. Ideally, the chosen visualization would provide a general feeling about the data at first glance while also allowing data-conscious viewers to extract exact values. The time grid is the layout designed to clearly compare years and months. I used both size and color to display newly confirmed cases to enhance visibility at first glance and clarity when comparing sizes. The darker color for the deceased adds gravity to the information. It’s a combination of lines and multiple visualizations. 
+
       </p>
 
       <h3>Reflection</h3>
 
       <p>
         I've been reflecting on the challenge of balancing specificity and precision with visual appeal and emotional impact in my work. Finding ways to achieve both simultaneously has been difficult, and sometimes sacrifices must be made. The critique process did help me develop my ideas, and I now feel I've achieved a good balance between the visual encoding and the data I want to express.
+Another reflection concerns visualizing values using a different scale. Conceptually, I like the third visualization, but when I implement it, the scale of values in cumulative_confirmed  and other data is very different, so I can not see changes in other data. Using a different scale would also be confusing. I would appreciate any suggestions about it!
       </p>
 		</section>
 	</main>

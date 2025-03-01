@@ -1,13 +1,37 @@
-// Immediately execute to ensure visualization loads
-(function() {
+// Wrap everything in a try-catch to catch any errors
+try {
+    console.log("D3.js script starting execution");
+    
+    // Check if D3 is available
+    if (typeof d3 === 'undefined') {
+      console.error("D3.js library is not loaded! Please check your script tags.");
+      document.getElementById('covid-visualization').innerHTML = 
+        '<div style="color: red; padding: 20px;">Error: D3.js library not found. Check console for details.</div>';
+      throw new Error("D3.js library not found");
+    }
+    
+    console.log("D3.js version:", d3.version);
+    
     // Set up dimensions and margins
     const margin = { top: 50, right: 50, bottom: 30, left: 60 };
     const width = 1200 - margin.left - margin.right;
     const height = 600 - margin.top - margin.bottom;
     const yearHeight = height / 3;
     const monthWidth = width / 12;
-  
-    // Create SVG
+    
+    console.log("Visualization container:", document.getElementById('covid-visualization'));
+    
+    // Check if the container exists
+    if (!document.getElementById('covid-visualization')) {
+      console.error("Container element #covid-visualization not found!");
+      throw new Error("Container element not found");
+    }
+    
+    // Add a visible element to confirm the container is working
+    document.getElementById('covid-visualization').innerHTML = 
+      '<div style="color: white; padding: 10px; background-color: #333;">Initializing visualization...</div>';
+    
+    // Create SVG with explicit dimensions for debugging
     const svg = d3.select("#covid-visualization")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
@@ -15,20 +39,39 @@
       .attr("style", "background-color: black;")
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
-  
+    
+    console.log("SVG created");
+    
+    // Add a visible rectangle to confirm the SVG is rendering
+    svg.append("rect")
+      .attr("width", width)
+      .attr("height", height)
+      .attr("fill", "none")
+      .attr("stroke", "red")
+      .attr("stroke-width", 2);
+    
+    console.log("Debug rectangle added");
+    
+    // Add text to confirm visualization is working
+    svg.append("text")
+      .attr("x", width/2)
+      .attr("y", height/2)
+      .attr("fill", "white")
+      .attr("text-anchor", "middle")
+      .attr("font-size", "20px")
+      .text("Visualization area - loading data...");
+    
+    console.log("Debug text added");
+    
     // Color scale for circles - pink/purple with varying saturation
     const colorScale = d3.scaleLinear()
       .range(["rgba(186, 85, 211, 0.3)", "rgba(186, 85, 211, 0.95)"]);
-  
-    // Try to load CSV, but use sample data if not available
-    d3.csv("COVID_US_cases.csv")
-      .then(processData)
-      .catch(error => {
-        console.log("Error loading CSV, using sample data instead:", error);
-        // Generate sample data
-        const sampleData = generateSampleData();
-        processData(sampleData);
-      });
+    
+    // Generate sample data since we don't have the actual CSV file
+    console.log("Generating sample data");
+    const sampleData = generateSampleData();
+    console.log("Sample data generated, first few items:", sampleData.slice(0, 3));
+    processData(sampleData);
   
     function generateSampleData() {
       const data = [];
@@ -60,7 +103,7 @@
         const newCases = Math.max(0, Math.round(baseCases * (0.7 + Math.random() * 0.6)));
         
         data.push({
-          date: d,
+          date: new Date(d),  // Ensure we're creating a proper date object
           new_confirmed: newCases,
           new_deceased: Math.round(newCases * 0.015),
           new_recovered: Math.round(newCases * 0.8),
@@ -76,14 +119,12 @@
     }
   
     function processData(data) {
+      console.log("Processing data");
       // Process the data
       data.forEach(d => {
         // Handle both string dates from CSV and Date objects from sample data
         d.date = (typeof d.date === 'string') ? new Date(d.date) : d.date;
         d.new_confirmed = +d.new_confirmed;
-        d.new_deceased = +d.new_deceased;
-        d.new_recovered = +d.new_recovered;
-        d.new_tested = +d.new_tested;
         
         // Extract year, month, day
         d.year = d.date.getFullYear();
@@ -99,6 +140,7 @@
       
       // Filter data for 2020-2022
       const filteredData = data.filter(d => d.year >= 2020 && d.year <= 2022);
+      console.log("Filtered data length:", filteredData.length);
       
       // Group data by week instead of showing individual days
       const weeklyData = d3.rollups(
@@ -113,6 +155,9 @@
         d => d.weekId
       ).map(d => d[1]);
       
+      console.log("Weekly data created, count:", weeklyData.length);
+      console.log("Sample of weekly data:", weeklyData.slice(0, 3));
+      
       // Group weekly data by year and month
       const nestedData = d3.groups(
         weeklyData, 
@@ -120,8 +165,11 @@
         d => d.month
       );
       
+      console.log("Data nested by year and month");
+      
       // Find max average for scaling circles
       const maxAverage = d3.max(weeklyData, d => d.new_confirmed_avg);
+      console.log("Max average:", maxAverage);
       
       // Scale for circle radius (min 3px, max 30px for better visibility)
       const radiusScale = d3.scaleSqrt()
@@ -130,6 +178,9 @@
       
       // Update color scale domain
       colorScale.domain([0, maxAverage]);
+      
+      // Clear the debug elements
+      svg.selectAll("*").remove();
       
       // Fix the year labels - use full 4-digit year labels
       const yearLabels = ['2020', '2021', '2022']; 
@@ -143,7 +194,11 @@
         .attr("y", (d, i) => i * yearHeight + yearHeight / 2)
         .attr("dy", "0.35em")
         .attr("text-anchor", "end")
+        .attr("fill", "white")  // Explicitly set fill color
+        .attr("font-size", "16px")  // Explicitly set font size
         .text(d => d);
+      
+      console.log("Year labels added");
       
       // Add month labels with better formatting
       svg.selectAll(".month-label")
@@ -154,10 +209,14 @@
         .attr("x", d => d * monthWidth + monthWidth / 2)
         .attr("y", -20)
         .attr("text-anchor", "middle")
+        .attr("fill", "white")  // Explicitly set fill color
+        .attr("font-size", "12px")  // Explicitly set font size
         .text(d => {
           const date = new Date(2020, d, 1);
           return date.toLocaleString('default', { month: 'short' });
         });
+      
+      console.log("Month labels added");
       
       // Add grid
       // Vertical grid lines (months)
@@ -186,6 +245,8 @@
         .attr("stroke", "rgba(255, 255, 255, 0.2)")
         .attr("stroke-width", 0.5);
       
+      console.log("Grid lines added");
+      
       // Create a group for each year
       const yearGroups = svg.selectAll(".year-group")
         .data(nestedData)
@@ -194,6 +255,8 @@
         .attr("class", "year-group")
         .attr("transform", d => `translate(0,${(d[0] - 2020) * yearHeight})`);
       
+      console.log("Year groups created");
+      
       // For each year, create month groups
       const monthGroups = yearGroups.selectAll(".month-group")
         .data(d => d[1])
@@ -201,6 +264,8 @@
         .append("g")
         .attr("class", "month-group")
         .attr("transform", d => `translate(${d[0] * monthWidth},0)`);
+      
+      console.log("Month groups created");
       
       // Generate curve paths for each month
       monthGroups.each(function(monthData) {
@@ -270,6 +335,8 @@
           .attr("stroke-width", 1);
       });
       
+      console.log("Month data paths and circles created");
+      
       // Add a title with white text
       svg.append("text")
         .attr("class", "title-text")
@@ -278,6 +345,7 @@
         .attr("text-anchor", "middle")
         .attr("font-size", "18px")
         .attr("font-weight", "bold")
+        .attr("fill", "white")  // Explicitly set fill color
         .text("COVID-19 US Cases (2020-2022): Weekly Averages");
       
       // Add a legend explaining color/size with white text
@@ -289,6 +357,7 @@
         .attr("x", 0)
         .attr("y", 0)
         .attr("font-size", "12px")
+        .attr("fill", "white")  // Explicitly set fill color
         .text("Circle size & color:");
       
       legendG.append("text")
@@ -296,6 +365,20 @@
         .attr("x", 0)
         .attr("y", 20)
         .attr("font-size", "12px")
+        .attr("fill", "white")  // Explicitly set fill color
         .text("Weekly average case count");
+      
+      console.log("Visualization completed successfully");
     }
-  })();
+  } catch (error) {
+    console.error("Error in D3.js visualization:", error);
+    // Display error message to user
+    if (document.getElementById('covid-visualization')) {
+      document.getElementById('covid-visualization').innerHTML = 
+        `<div style="color: red; padding: 20px; background-color: #333;">
+          <h3>Visualization Error</h3>
+          <p>${error.message}</p>
+          <p>Please check the browser console for more details.</p>
+        </div>`;
+    }
+  }
