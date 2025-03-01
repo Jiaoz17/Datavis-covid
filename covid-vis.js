@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
         const colorScaleDeath = d3.scaleLinear()
             .domain([0, maxDeathAverage])
-            .range(["rgba(60, 60, 60, 0.05)", "rgba(10, 10, 10, 0.95)"]); // Much darker
+            .range(["rgba(0, 0, 0, 0.05)", "rgba(0, 0, 0, 0.95)"]); // Much darker
         
         // Add year labels - moved further left to prevent being covered by circles
         svg.selectAll(".year-label")
